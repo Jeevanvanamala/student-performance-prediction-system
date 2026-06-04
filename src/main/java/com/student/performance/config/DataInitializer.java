@@ -24,45 +24,61 @@ public class DataInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) {
 
-        if (studentRepository.count() > 0) {
-            return; // Prevent duplicate data
+        // ===============================
+        // CREATE ADMIN IF MISSING
+        // ===============================
+        if (studentRepository.findByEmail("admin@gmail.com").isEmpty()) {
+
+            Student admin = new Student();
+            admin.setName("Admin User");
+            admin.setEmail("admin@gmail.com");
+            admin.setPassword("admin123");
+            admin.setDepartment("ADMIN");
+            admin.setYear(0);
+            admin.setRole("ADMIN");
+
+            studentRepository.save(admin);
+
+            System.out.println("✅ Admin account created");
         }
 
-        Random random = new Random();
-
         // ===============================
-        // ✅ CREATE ADMIN ACCOUNT
-        // ===============================
-        Student admin = new Student();
-        admin.setName("Admin User");
-        admin.setEmail("admin@gmail.com");
-        admin.setPassword("admin123");
-        admin.setDepartment("ADMIN");
-        admin.setYear(0);
-        admin.setRole("ADMIN");
-
-        studentRepository.save(admin);
-
-        // ===============================
-        // ✅ CREATE FACULTY ACCOUNTS
+        // CREATE FACULTY IF MISSING
         // ===============================
         String[] departments = {"CSE", "IT", "ECE", "MECH"};
 
         for (String dept : departments) {
-            Student faculty = new Student();
-            faculty.setName(dept + " Faculty");
-            faculty.setEmail(dept.toLowerCase() + "faculty@gmail.com");
-            faculty.setPassword("faculty123");
-            faculty.setDepartment(dept);
-            faculty.setYear(0);
-            faculty.setRole("FACULTY");
 
-            studentRepository.save(faculty);
+            String facultyEmail = dept.toLowerCase() + "faculty@gmail.com";
+
+            if (studentRepository.findByEmail(facultyEmail).isEmpty()) {
+
+                Student faculty = new Student();
+                faculty.setName(dept + " Faculty");
+                faculty.setEmail(facultyEmail);
+                faculty.setPassword("faculty123");
+                faculty.setDepartment(dept);
+                faculty.setYear(0);
+                faculty.setRole("FACULTY");
+
+                studentRepository.save(faculty);
+
+                System.out.println("✅ Faculty created: " + facultyEmail);
+            }
         }
 
         // ===============================
-        // ✅ STUDENT NAME POOL
+        // STUDENTS ALREADY EXIST?
         // ===============================
+        long studentCount = studentRepository.count();
+
+        if (studentCount > 10) {
+            System.out.println("✅ Students already exist. Skipping generation.");
+            return;
+        }
+
+        Random random = new Random();
+
         String[] firstNames = {
                 "Arjun", "Rahul", "Kiran", "Vikram", "Sanjay",
                 "Amit", "Rohit", "Deepak", "Naveen", "Aditya",
@@ -77,9 +93,6 @@ public class DataInitializer implements CommandLineRunner {
                 "Iyer", "Patel", "Joshi", "Rao", "Mishra"
         };
 
-        // ===============================
-        // ✅ GENERATE 60 STUDENTS PER DEPT
-        // ===============================
         for (String dept : departments) {
 
             for (int i = 1; i <= 60; i++) {
@@ -89,6 +102,7 @@ public class DataInitializer implements CommandLineRunner {
                 String fullName = firstName + " " + lastName;
 
                 Student student = new Student();
+
                 student.setName(fullName);
                 student.setEmail(firstName.toLowerCase() + i + dept.toLowerCase() + "@gmail.com");
                 student.setPassword("123456");
@@ -98,17 +112,15 @@ public class DataInitializer implements CommandLineRunner {
 
                 Student savedStudent = studentRepository.save(student);
 
-                // ===============================
-                // ✅ CREATE ACADEMIC RECORD
-                // ===============================
                 AcademicRecord record = new AcademicRecord();
+
                 record.setSemester(5);
 
-                double attendance = 50 + random.nextInt(51); // 50–100
-                double internalMarks = 30 + random.nextInt(71); // 30–100
-                double assignmentMarks = 30 + random.nextInt(71); // 30–100
-                double studyHours = 1 + random.nextInt(8); // 1–8
-                double previousGpa = 5 + random.nextDouble() * 5; // 5.0–10.0
+                double attendance = 50 + random.nextInt(51);
+                double internalMarks = 30 + random.nextInt(71);
+                double assignmentMarks = 30 + random.nextInt(71);
+                double studyHours = 1 + random.nextInt(8);
+                double previousGpa = 5 + random.nextDouble() * 5;
 
                 record.setAttendance(attendance);
                 record.setInternalMarks(internalMarks);
@@ -116,12 +128,13 @@ public class DataInitializer implements CommandLineRunner {
                 record.setStudyHours(studyHours);
                 record.setPreviousGpa(previousGpa);
                 record.setExtracurricularActivities("Sports");
+
                 record.setStudent(savedStudent);
 
                 recordRepository.save(record);
             }
         }
 
-        System.out.println("✅ Admin + Faculty + 60 Students per Department Generated Successfully!");
+        System.out.println("✅ Sample students generated successfully");
     }
 }
