@@ -1,0 +1,6 @@
+{
+    "selected_model": "RANDOM_FOREST",
+    "r2_score": 0.8674,
+    "linear_regression_r2": 0.8364,
+    "random_forest_r2": 0.8674
+}
