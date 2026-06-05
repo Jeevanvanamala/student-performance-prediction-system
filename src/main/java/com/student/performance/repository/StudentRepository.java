@@ -8,10 +8,7 @@ import java.util.Optional;
 
 public interface StudentRepository extends JpaRepository<Student, Long> {
 
-    // 🔹 Required for Login
     Optional<Student> findByEmail(String email);
 
-    // 🔹 Required for Department Filter
     List<Student> findByDepartment(String department);
-
 }
